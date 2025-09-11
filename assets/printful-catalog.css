@@ -1,0 +1,800 @@
+/* Printful Catalog Styles */
+
+.printful-catalog-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 1024px) {
+    .products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .products-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.product-card {
+    background: #ffffff;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+    margin-bottom: 15px;
+    overflow: hidden;
+    border-radius: 6px;
+}
+
+.product-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.05);
+}
+
+.product-info {
+    padding: 10px 0;
+}
+
+.product-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+    color: #333;
+    line-height: 1.4;
+}
+
+.product-id {
+    font-size: 12px;
+    color: #666;
+    margin: 5px 0;
+}
+
+.product-category {
+    font-size: 14px;
+    color: #007cba;
+    font-weight: 500;
+    margin: 5px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.product-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: #000;
+    margin: 10px 0;
+}
+
+.load-more-container {
+    text-align: center;
+    margin-top: 30px;
+}
+
+/* Design Maker Page Styles */
+.design-maker-container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.design-maker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 0 0 15px 0;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.design-name-input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    width: 250px;
+}
+
+.design-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.design-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#save-design-draft {
+    background: #28a745;
+    color: white;
+}
+
+#save-design-draft:hover {
+    background: #218838;
+}
+
+#add-design-to-cart {
+    background: #007cba;
+    color: white;
+}
+
+#add-design-to-cart:hover {
+    background: #005a87;
+}
+
+/* My Designs Section */
+.my-designs-section {
+    padding: 20px 0;
+}
+
+.my-designs-section h3 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 24px;
+}
+
+.designs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+@media (max-width: 1024px) {
+  .designs-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .designs-grid { grid-template-columns: 1fr; }
+}
+
+.design-card {
+    background: #ffffff;
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.design-card-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.pf-btn--danger {
+    background: #c53030;
+    color: #fff;
+}
+.pf-btn--danger:hover {
+    background: #9b2c2c;
+    color: #fff;
+}
+
+.design-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.design-card h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.design-card p {
+    margin: 8px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.design-card p strong {
+    color: #333;
+}
+
+.design-actions {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.design-actions button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+    min-width: 120px;
+}
+
+.edit-design {
+    background: #6c757d;
+    color: white;
+}
+
+.edit-design:hover {
+    background: #5a6268;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .design-maker-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .design-name-input {
+        width: 100%;
+    }
+    
+    .design-actions {
+        justify-content: center;
+    }
+    
+    .designs-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 20px;
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 212, 0, 0.3);
+    border-radius: 50%;
+    border-top-color: #000;
+    animation: spin 1s ease-in-out infinite;
+    margin-bottom: 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-spinner p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Error States */
+.printful-error {
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    border-radius: 6px;
+    padding: 15px;
+    margin: 20px 0;
+}
+
+.printful-error p {
+    color: #c53030;
+    margin: 0;
+    font-weight: 500;
+}
+
+.error-message {
+    color: #c53030;
+    background: #fff5f5;
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #c53030;
+    margin-top: 10px;
+}
+
+.no-more-products {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Image loading states */
+.product-image img {
+    background: #f8f9fa;
+    transition: opacity 0.3s ease;
+}
+
+.product-image img[loading="lazy"] {
+    opacity: 0;
+}
+
+.product-image img.loaded {
+    opacity: 1;
+}
+
+/* Status badges */
+.status-draft {
+    background: #ffc107;
+    color: #856404;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-in_cart {
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.status-completed {
+    background: #007cba;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.edm-container {
+    width: 100%;
+    height: calc(85vh - 95px);
+    border: 1px solid #e1e5e9;
+    border-radius: 8px;
+    margin: 20px 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.edm-container iframe {
+    position: absolute;
+    inset: 0;                          /* top/right/bottom/left: 0 */
+    width: 100% !important;
+    height: 100% !important;
+    border: 0 !important;
+    display: block;
+}
+
+.edm-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: #f8f9fa;
+}
+
+.edm-loading p {
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #666;
+}
+
+.edm-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    padding: 40px 20px;
+}
+
+.edm-fallback p {
+    color: #c53030;
+    margin: 10px 0;
+    text-align: center;
+    font-size: 16px;
+}
+
+.edm-fallback .button {
+    display: inline-block;
+    background: #007cba;
+    color: white;
+    padding: 12px 24px;
+    text-decoration: none;
+    border-radius: 6px;
+    margin-top: 20px;
+    transition: background 0.3s ease;
+}
+
+.edm-fallback .button:hover {
+    background: #005a87;
+    color: white;
+}
+
+/* Utility classes */
+.text-center {
+    text-align: center;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+/* Modal Styles */
+.printful-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.printful-modal-content {
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    height: 90%;
+    max-width: 1200px;
+    max-height: 800px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.printful-modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #e1e5e9;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.printful-modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.modal-actions button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-modal {
+    background: #dc3545;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-modal:hover {
+    background: #c82333;
+}
+
+#modal-save-draft {
+    background: #28a745;
+    color: white;
+}
+
+#modal-save-draft:hover {
+    background: #218838;
+}
+
+#modal-add-to-cart {
+    background: #007cba;
+    color: white;
+}
+
+#modal-add-to-cart:hover {
+    background: #005a87;
+}
+
+.modal-edm-container {
+    flex: 1;
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Mobile modal adjustments */
+@media (max-width: 768px) {
+    .printful-modal-content {
+        width: 95%;
+        height: 95%;
+    }
+    
+    .printful-modal-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .modal-actions {
+        justify-content: space-between;
+    }
+    
+    .modal-edm-container {
+        padding: 10px;
+    }
+}
+
+.pf-btn{
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.pf-btn--primary{
+    background: #ffd400;
+    color: #000;
+}
+
+.pf-btn--primary:hover{
+    background: #ffd400;
+    color: #000;
+}
+
+.pf-btn--secondary{
+    background: #000;
+    color: #ffd400;
+    max-width: 300px;
+}
+
+.pf-btn--secondary:hover{
+    background: #000;
+    color: #ffd400;
+    max-width: 300px;
+}
+
+.pf-btn--disabled,
+.pf-btn[disabled] {
+    opacity: .45;
+    cursor: not-allowed;
+    pointer-events: none;
+    color: grey;
+}
+
+.pf-filter-bar { display:flex; flex-wrap:wrap; gap:.5rem; margin:0 0 1rem; }
+.pf-filter-btn {
+  border:1px solid #ccc; background:#fff; padding:.5rem .9rem; border-radius:6px;
+  cursor:pointer; font-size:.95rem;
+}
+.pf-filter-btn.is-active { border-color:#111; box-shadow:0 0 0 2px #111 inset; }
+
+.woocommerce-MyAccount-navigation-link--my-designs a::before{
+  content: "\f53f";              /* FA6 'palette' */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;              /* solid weight */
+  display: inline-block;
+  margin-right: .55em;
+  width: 1.1em;
+  text-align: center;
+}
+
+/* === One-line responsive header for your Custom Design bar === */
+/* Apply this to the outer wrapper of that strip. If you don't have a wrapper,
+   add class="pf-designer-header" to the container that holds the title,
+   input, price, and the two buttons. */
+.pf-designer-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:8px 0;
+  flex-wrap:nowrap;          /* keep one line */
+  overflow-x:auto;           /* stay one line on tiny screens; allow gentle scroll */
+  scrollbar-width: thin;
+}
+
+/* Title */
+.pf-designer-header .pf-title{
+  flex:0 0 auto;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  overflow:hidden;
+}
+
+/* Name input */
+.pf-designer-header .pf-name{
+  flex:1 1 320px;            /* this is the stretchiest part */
+  min-width:160px;
+}
+.pf-designer-header .pf-name input,
+.pf-designer-header .pf-name .wp-block-search__input,
+.pf-designer-header .pf-name input[type="text"]{
+  width:100%;
+}
+
+/* Price */
+.pf-designer-header .pf-price{
+  flex:0 0 auto;
+  white-space:nowrap;
+}
+
+/* Buttons */
+.pf-designer-header .pf-actions{
+  display:flex;
+  gap:8px;
+  flex:0 0 auto;
+}
+.pf-designer-header .pf-actions .button,
+.pf-designer-header .pf-actions button,
+.pf-designer-header .pf-actions a{
+  white-space:nowrap;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px 14px;
+}
+
+/* Tighten spacing & size on very small viewports while staying one line */
+@media (max-width: 640px){
+  .pf-designer-header{ gap:8px; }
+  .pf-designer-header .pf-title{ max-width:28vw; } /* keeps room for input/buttons */
+  .pf-designer-header .pf-actions .button,
+  .pf-designer-header .pf-actions button,
+  .pf-designer-header .pf-actions a{
+    padding:8px 12px;
+    font-size:0.92rem;
+  }
+}
+
+.printful-catalog-container .pf-filter-row{
+  display:flex;
+  align-items:center;
+  gap:.65rem;
+  margin: 0 0 1.2rem;
+}
+
+.printful-catalog-container .pf-filter-label{
+  font: 600 clamp(1rem, 1vw + .6rem, 1.125rem)/1 var(--pc-font);
+  color: var(--pc-color-fg);
+  letter-spacing:.2px;
+}
+
+.printful-catalog-container .pf-filter-select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  font: 500 1rem/1.2 var(--pc-font);
+  color: var(--pc-color-fg);
+  background: var(--pc-color-bg);
+  border-radius: var(--pc-radius);
+  padding: var(--pc-pad-y) calc(var(--pc-pad-x) * 2.2) var(--pc-pad-y) var(--pc-pad-x);
+  min-width: 260px;
+  max-width: min(560px, 90vw);
+  box-shadow: var(--pc-shadow);
+  transition: box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
+}
+
+/* caret */
+.printful-catalog-container .pf-filter-select{
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%),
+    linear-gradient(to right, transparent, transparent);
+  background-position:
+    calc(100% - 22px) 52%,
+    calc(100% - 16px) 52%,
+    0 0;
+  background-size: 6px 6px, 6px 6px, 100% 100%;
+  background-repeat: no-repeat;
+}
+
+/* focus / hover */
+.printful-catalog-container .pf-filter-select:focus{
+  outline: none;
+  box-shadow: var(--pc-shadow-focus), var(--pc-shadow);
+}
+
+/* optgroup label styling (native) */
+.printful-catalog-container .pf-filter-select optgroup{
+  color: color-mix(in oklab, var(--pc-color-fg) 70%, transparent);
+  font-weight: 600;
+}
+
+/* compact on small screens */
+@media (max-width: 782px){
+  .printful-catalog-container .pf-filter-row{
+    gap:.5rem;
+    margin-bottom:.9rem;
+  }
+  .printful-catalog-container .pf-filter-label{ font-size: 1rem; }
+  .printful-catalog-container .pf-filter-select{
+    min-width: 200px;
+    width: 100%;
+  }
+}
+
+/* dark-mode friendly if theme doesn’t set vars */
+@media (prefers-color-scheme: dark){
+  :root{
+    --pc-color-border: rgba(255,255,255,.16);
+    --pc-color-border-strong: rgba(255,255,255,.25);
+  }
+}
+
+.printful-catalog-container h2,
+.printful-catalog-container .catalog-title{
+  margin-bottom: .75rem;
+}
