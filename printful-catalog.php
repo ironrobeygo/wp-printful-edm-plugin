@@ -141,13 +141,13 @@ class PrintfulCatalogPlugin {
     private $store_id;
     
     public function __construct() {
-        add_action('init', array($this, 'init'));
-        add_action('init', [$this, 'register_cart_line_overrides']);
-        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
-        add_shortcode('printful_catalog', array($this, 'display_catalog_shortcode'));
+        add_action('init',                                          array($this, 'init'));
+        add_action('init',                                          array($this, 'register_cart_line_overrides'));
+        add_action('wp_enqueue_scripts',                            array($this, 'enqueue_scripts'));
+        add_shortcode('printful_catalog',                           array($this, 'display_catalog_shortcode'));
         // Alias tag to support [display_catalog_shortcode ...]
-        add_shortcode('display_catalog_shortcode', array($this, 'display_catalog_shortcode'));
-        add_shortcode('printful_design_maker', array($this, 'display_design_maker_shortcode'));
+        add_shortcode('display_catalog_shortcode',                  array($this, 'display_catalog_shortcode'));
+        add_shortcode('printful_design_maker',                      array($this, 'display_design_maker_shortcode'));
         
         // AJAX handlers
         add_action('wp_ajax_load_more_products',                    array($this, 'load_more_products'));
@@ -160,24 +160,20 @@ class PrintfulCatalogPlugin {
         add_action('wp_ajax_printful_guest_save_template',          array($this, 'ajax_printful_guest_save_template'));
         add_action('wp_ajax_printful_claim_draft',                  array($this, 'ajax_printful_claim_draft'));
 
-        add_action('wp_ajax_get_edm_token', array($this, 'get_edm_token'));
-        add_action('wp_ajax_nopriv_get_edm_token', array($this, 'get_edm_token'));
+        add_action('wp_ajax_get_edm_token',                         array($this, 'get_edm_token'));
+        add_action('wp_ajax_nopriv_get_edm_token',                  array($this, 'get_edm_token'));
 
-        add_action('wp_ajax_printful_save_template', array($this, 'ajax_printful_save_template'));  
-        add_action('wp_ajax_nopriv_printful_save_template', array($this, 'ajax_printful_save_template'));
+        add_action('wp_ajax_printful_save_template',                array($this, 'ajax_printful_save_template'));  
+        add_action('wp_ajax_nopriv_printful_save_template',         array($this, 'ajax_printful_save_template'));
         
         // Admin menu
-        add_action('admin_menu', array($this, 'admin_menu'));
-        add_action('wp_ajax_delete_design', array($this, 'delete_design'));
-        
-        // Design product page
-        // add_action('init', array($this, 'add_design_product_endpoint'));
-        // add_action('template_redirect', array($this, 'design_product_template_redirect'));
+        add_action('admin_menu',                                    array($this, 'admin_menu'));
+        add_action('wp_ajax_delete_design',                         array($this, 'delete_design'));
         
         // WooCommerce My Account integration
-        add_action('init', array($this, 'add_my_designs_endpoint'));
-        add_filter('woocommerce_account_menu_items', array($this, 'add_my_designs_menu_item'));
-        add_action('woocommerce_account_my-designs_endpoint', array($this, 'my_designs_content'));
+        add_action('init',                                          array($this, 'add_my_designs_endpoint'));
+        add_filter('woocommerce_account_menu_items',                array($this, 'add_my_designs_menu_item'));
+        add_action('woocommerce_account_my-designs_endpoint',       array($this, 'my_designs_content'));
 
         require_once PRINTFUL_CATALOG_PLUGIN_PATH . 'includes/hooks.php';
         require_once PRINTFUL_CATALOG_PLUGIN_PATH . 'includes/class-printful-auto-confirm.php';
@@ -247,11 +243,6 @@ class PrintfulCatalogPlugin {
     }
 
     public function register_cart_line_overrides() {
-
-        // if (defined('WP_DEBUG') && WP_DEBUG) {
-        //     error_log('[pf] register_cart_line_overrides hooked');
-        // }
-
         // Ensure WooCommerce is active
         if (!class_exists('WC_Cart')) {
             return;
@@ -264,7 +255,6 @@ class PrintfulCatalogPlugin {
                 $cat     = !empty($cart_item['design_category']) ? $cart_item['design_category'] : '';
                 $title   = $cat ? sprintf('%s — %s', esc_html($design), esc_html($cat)) : esc_html($design);
 
-                // Build a clean title without a link (cart & checkout use this)
                 $name = '<strong class="pf-line-title">' . $title . '</strong>';
             }
             return $name;
@@ -314,11 +304,25 @@ class PrintfulCatalogPlugin {
     
     public function enqueue_scripts() {
         wp_enqueue_script('jquery');
-        wp_enqueue_script('printful-catalog-js', PRINTFUL_CATALOG_PLUGIN_URL . 'assets/printful-catalog.js', array('jquery'), '1.0.0', true);
         wp_enqueue_style('printful-catalog-css', PRINTFUL_CATALOG_PLUGIN_URL . 'assets/printful-catalog.css', array(), '1.0.0');
         
         if ( function_exists('is_account_page') && is_account_page() ) {
+            wp_enqueue_script('printful-catalog-js', PRINTFUL_CATALOG_PLUGIN_URL . 'assets/printful-catalog.js', array('jquery'), '1.0.0', true);
             wp_enqueue_script('pf-claim-draft', PRINTFUL_CATALOG_PLUGIN_URL . 'assets/printful-edm-draft.js', [], '1.0.0', true);
+        }
+
+        if(is_singular()){
+            global $post;
+            if ($post instanceof WP_Post && has_shortcode($post->post_content, 'printful_design_maker')) {
+                if (is_page('design')) {
+                    wp_enqueue_script('printful-edm-js', PRINTFUL_CATALOG_PLUGIN_URL . 'assets/printful-edm.js', array('jquery'), '1.0.0', true);
+                    wp_enqueue_script('printful-edm-embed','https://files.cdn.printful.com/embed/embed.js',array(),null,false);
+                }
+            }
+
+			if ($post instanceof WP_Post && has_shortcode($post->post_content, 'printful_catalog')) {
+				wp_enqueue_script('printful-catalog-js', PRINTFUL_CATALOG_PLUGIN_URL . 'assets/printful-catalog.js', array('jquery'), '1.0.0', true);
+			}
         }
         
         // Localize script for AJAX
@@ -332,9 +336,9 @@ class PrintfulCatalogPlugin {
         if (function_exists('wc_get_cart_url')) {
             $ajax_data['cart_url'] = wc_get_cart_url();
         }
-        
-        wp_enqueue_script('printful-edm-embed','https://files.cdn.printful.com/embed/embed.js',array(),null,false);
+
         wp_localize_script('printful-catalog-js', 'printful_ajax', $ajax_data);
+        wp_localize_script('printful-edm-js', 'printful_ajax', $ajax_data);
     }
     
     public function create_database_tables() {
@@ -379,19 +383,6 @@ class PrintfulCatalogPlugin {
         $this->maybe_add_index($table_name, 'user_ext',            "ALTER TABLE $table_name ADD UNIQUE KEY user_ext (user_id, external_product_id)");
         $this->maybe_add_index($table_name, 'idx_user',            "ALTER TABLE $table_name ADD KEY idx_user (user_id)");
         $this->maybe_add_index($table_name, 'idx_external',        "ALTER TABLE $table_name ADD KEY idx_external (external_product_id)");
-    }
-
-    /* NEW: small helpers to safely add columns/indexes when missing */
-    private function maybe_add_column($table, $column, $sql) {
-        global $wpdb;
-        $exists = $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM `$table` LIKE %s", $column));
-        if (!$exists) { $wpdb->query($sql); }
-    }
-
-    private function maybe_add_index($table, $index, $sql) {
-        global $wpdb;
-        $exists = $wpdb->get_var($wpdb->prepare("SHOW INDEX FROM `$table` WHERE Key_name = %s", $index));
-        if (!$exists) { $wpdb->query($sql); }
     }
     
     public function admin_menu() {
@@ -545,11 +536,6 @@ class PrintfulCatalogPlugin {
         <?php
     }
     
-    private function clear_product_cache() {
-        global $wpdb;
-        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_printful_products_%' OR option_name LIKE '_transient_timeout_printful_products_%'");
-    }
-    
     public function make_api_request($endpoint, $method = 'GET', $data = null) {
         if (empty($this->api_key)) {
             error_log('Printful API Error: API key not configured');
@@ -595,84 +581,11 @@ class PrintfulCatalogPlugin {
         
         return $decoded;
     }
-
-    /* === Catalog Categories (v2) helpers === */
-    private function pf_get_all_catalog_categories($force_refresh = false) {
-        $cache_key = 'pf_catalog_categories_all_v2';
-        if (!$force_refresh) {
-            $cached = get_transient($cache_key);
-            if ($cached !== false) return $cached;
-        }
-
-        $categories = [];
-        $limit = 100; $offset = 0;
-
-        do {
-            $endpoint = "v2/catalog-categories?limit={$limit}&offset={$offset}";
-            $resp = $this->make_api_request($endpoint, 'GET');
-
-            if (!is_array($resp) || empty($resp['data']) || !is_array($resp['data'])) break;
-
-            foreach ($resp['data'] as $row) {
-                $categories[] = [
-                    'id'        => (int) ($row['id'] ?? 0),
-                    'parent_id' => (int) ($row['parent_id'] ?? 0),
-                    'title'     => (string) ($row['title'] ?? ''),
-                    'image_url' => (string) ($row['image_url'] ?? ''),
-                ];
-            }
-
-            $count = count($resp['data']);
-            $offset += $limit;
-        } while ($count === $limit);
-
-        set_transient($cache_key, $categories, DAY_IN_SECONDS);
-        return $categories;
-    }
-
-    private function pf_build_category_paths(array $cats) {
-        $byId = [];
-        foreach ($cats as $c) $byId[$c['id']] = $c;
-
-        $cache = [];
-        $pathOf = function($id) use (&$byId, &$cache, &$pathOf) {
-            if (isset($cache[$id])) return $cache[$id];
-            if (!isset($byId[$id])) return '';
-            $chain = [];
-            $cur = $byId[$id]; $guard = 0;
-            while ($cur && $guard++ < 20) {
-                array_unshift($chain, (string)($cur['title'] ?? ''));
-                $pid = (int)($cur['parent_id'] ?? 0);
-                $cur = $pid && isset($byId[$pid]) ? $byId[$pid] : null;
-            }
-            return $cache[$id] = trim(implode(' › ', array_filter($chain)));
-        };
-
-        $rows = [];
-        foreach ($cats as $c) $rows[] = ['id' => $c['id'], 'label' => $pathOf($c['id'])];
-        usort($rows, fn($a, $b) => strcasecmp($a['label'], $b['label']));
-        return $rows;
-    }
-    
-    private function get_edm_nonce_token( $product_id, $variant_id = null, $external_product_id = '' ) {
-        $payload = array(
-            'external_product_id' => $external_product_id ? (string) $external_product_id : (string) $product_id,
-            'external_customer_id' => (string)get_current_user_id() ?: null,
-        );
-        // if ( ! empty($_SERVER['REMOTE_ADDR']) )     { $payload['ip_address'] = sanitize_text_field($_SERVER['REMOTE_ADDR']); }
-        // if ( ! empty($_SERVER['HTTP_USER_AGENT']) ) { $payload['user_agent'] = sanitize_text_field($_SERVER['HTTP_USER_AGENT']); }
-
-        // Must call the API base (your make_api_request should prefix with https://api.printful.com/)
-        $response = $this->make_api_request( 'embedded-designer/nonces', 'POST', $payload );
-
-        if ( is_array( $response ) && isset( $response['result']['nonce']['nonce'] ) && is_string( $response['result']['nonce']['nonce'] ) ) {
-            return $response['result']['nonce']['nonce'];
-        }
-        return false;
-    }
     
     public function get_edm_token() {
         check_ajax_referer( 'printful_nonce', 'nonce' );
+
+        error_log('AJAX get_edm_token called');
 
         $product_id          = isset($_POST['product_id']) ? sanitize_text_field($_POST['product_id']) : '';
         $external_product_id = isset($_POST['external_product_id']) ? sanitize_text_field($_POST['external_product_id']) : '';
@@ -689,6 +602,8 @@ class PrintfulCatalogPlugin {
 
         $nonce_token = $this->get_edm_nonce_token( $product_id, null, $external_product_id );
 
+        error_log('EDM Nonce Token: ' . var_export($nonce_token, true));
+
         if ( is_string( $nonce_token ) && $nonce_token !== '' ) {
             wp_send_json_success( array(
                 'nonce'               => $nonce_token,               // <-- string, top-level
@@ -699,56 +614,7 @@ class PrintfulCatalogPlugin {
             wp_send_json_error( array('error'=>'api_failed','message'=>'Unable to get EDM token') );
         }
     }
-
-    private function get_catalog_min_price($product_id, $currency = null, $region = null) {
-        $key_bits = [$product_id, $currency ?: 'store', $region ?: 'store'];
-        $cache_key = 'pf_min_price_' . implode('_', $key_bits);
-        $cached = get_transient($cache_key);
-        if ($cached !== false) return $cached;
-
-        // Build v2 prices endpoint; omit params to use your store currency/region
-        $endpoint = "v2/catalog-products/{$product_id}/prices";
-        $qs = [];
-        if ($currency) $qs[] = 'currency=AUD';
-        if ($region)   $qs[] = 'selling_region_name=australia';
-        if ($qs) $endpoint .= '?' . implode('&', $qs);
-
-        $res = $this->make_api_request($endpoint, 'GET');
-        if (!$res || empty($res['data'])) return null;
-
-        $data = $res['data'];
-
-        // Map first-placement prices by technique (if present)
-        $placement_price_by_tech = [];
-        if (!empty($data['product']['placements']) && is_array($data['product']['placements'])) {
-            foreach ($data['product']['placements'] as $pl) {
-                $techKey = $pl['technique_key'] ?? $pl['techniqueKey'] ?? null;
-                if (!$techKey) continue;
-                $placement_price_by_tech[$techKey] = (float) (
-                    $pl['discounted_price'] ?? $pl['price'] ?? 0
-                );
-            }
-        }
-
-        // Walk all variant technique prices; pick minimum total
-        $min = INF;
-        if (!empty($data['variants']) && is_array($data['variants'])) {
-            foreach ($data['variants'] as $v) {
-                foreach ($v['techniques'] as $t) {
-                    $prices[]    = (float)$t['price'];
-                }
-            }
-
-            $min = $prices ? min($prices) : null; 
-        }
-
-        if (!is_finite($min)) return null;
-
-        set_transient($cache_key, $min, 12 * HOUR_IN_SECONDS);
-        return $min;
-    }
     
-    // Allow optional override: array of category IDs from the filter
     public function get_products($offset = 0, $limit = 8, $category_ids_override = null) {
         $raw = $category_ids_override;
         if (is_null($raw)) {
@@ -804,14 +670,6 @@ class PrintfulCatalogPlugin {
             error_log('Printful Catalog Error: ' . $e->getMessage());
             return [];
         }
-    }
-    
-    private function get_cached_products($cache_key) {
-        return get_transient('printful_products_' . md5($cache_key));
-    }
-    
-    private function set_cached_products($cache_key, $products, $expiration = 3600) {
-        set_transient('printful_products_' . md5($cache_key), $products, $expiration);
     }
     
     public function display_catalog_shortcode($atts) {
@@ -1011,13 +869,34 @@ class PrintfulCatalogPlugin {
         // sanitize/lock to allowed host
         $back_url = wp_validate_redirect($back_url, home_url('/'));
 
+		$prefill = array(
+			'design_name'         => '',
+			'external_product_id' => '',
+			'template_id'         => 0,
+			'variant_id'          => 0,
+		);
+
         // pull from URL if not provided as shortcode attrs
         if (empty($atts['product_id']) && isset($_GET['product_id'])) {
             $atts['product_id'] = sanitize_text_field($_GET['product_id']);
         }
         if (empty($atts['design_id']) && isset($_GET['design_id'])) {
             $atts['design_id'] = sanitize_text_field($_GET['design_id']);
-        }
+			$row = $this->fetch_design_by_id((int) $atts['design_id'], true);
+			if (! $row) {
+				// Protect privacy: only the owner can see their design details
+				return '<p>Error: Design not found or you do not have access.</p>';
+			}
+
+			if (empty($atts['product_id']) && ! empty($row['product_id'])) {
+				$atts['product_id'] = (string) $row['product_id'];
+			}
+
+			$prefill['design_name']         = (string) ($row['design_name'] ?? '');
+			$prefill['external_product_id'] = (string) ($row['external_product_id'] ?? '');
+			$prefill['template_id']         = (int)    ($row['template_id'] ?? 0);
+			$prefill['variant_id']          = (int)    ($row['variant_id'] ?? 0);
+		}
         
         $store_id = get_option('printful_store_id', '');
         
@@ -1043,14 +922,24 @@ class PrintfulCatalogPlugin {
                 ];
             }
         }
+
+        $store_id   	= (int) get_option('printful_store_id');
+		$design_name 	= $prefill['design_name'] ?: 'My Design';
         
         ob_start();
         ?>
-        <div class="design-maker-container">
+        <div id="design-maker-container"
+             data-unique-id="<?php echo esc_attr($unique_id); ?>"
+             data-product-id="<?php echo esc_attr($atts['product_id']); ?>"
+             data-design-id="<?php echo esc_attr($atts['design_id']); ?>"
+			 data-external-product-id="<?php echo esc_attr($prefill['external_product_id']); ?>"
+             data-store-id="<?php echo esc_attr($store_id); ?>"
+             data-current-user-id="<?php echo (int) get_current_user_id(); ?>"
+             data-variants='<?php echo wp_json_encode($variants_for_js, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES); ?>'>
             <div class="design-maker-header">
                 <div class="design-info">
                     <h2><?php echo $atts['title']; ?></h2>
-                    <input type="text" id="design-name-<?php echo $unique_id; ?>" class="design-name-input" placeholder="Enter design name..." value="My Design">
+                    <input type="text" id="design-name-<?php echo $unique_id; ?>" class="design-name-input" placeholder="Enter design name..." value="<?php echo esc_attr($design_name); ?>" />
                 </div>
                 <div class="pf-toolbar" style="display:flex;align-items:center;gap:12px;justify-content:space-between;margin:8px 0;">
                     <div class="pf-price" style="margin-top: 26px;">
@@ -1072,357 +961,6 @@ class PrintfulCatalogPlugin {
                 </div>
             </div>
         </div>
-        <script>
-        (function () {
-          function isPrintful(origin) {
-            try {
-              const h = new URL(origin).hostname.toLowerCase();
-              return (
-                h.endsWith('.printful.com') ||
-                h.endsWith('.printfulapp.com') ||
-                h === 'www.printful.com'
-              );
-            } catch (_) { return false; }
-          }
-        
-          window.addEventListener('message', function (e) {
-            if (!isPrintful(e.origin)) return;
-            const d = e.data || {};
-            const type = d.type || d.event || '';
-        
-            if (type === 'saveDesignFailed') {
-              const msg = d.message || (d.error && (d.error.message || d.error)) ||
-                          'Add content to at least one print area before saving.';
-              alert(msg);
-              // NOTE: do NOT post any reply back to the EDM here.
-            }
-          }, false);
-        })();
-        </script>
-
-        <script>
-        (function() {
-            const uniqueId = '<?php echo $unique_id; ?>';
-            const productId = '<?php echo esc_js($atts['product_id']); ?>';
-            const designId = '<?php echo esc_js($atts['design_id']); ?>';
-            const storeId = '<?php echo esc_js($store_id); ?>';
-            const currentUserId = <?php echo (int) get_current_user_id(); ?>;
-            const variants = <?php echo wp_json_encode($variants_for_js, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES); ?>;
-            let currentUnitPrice = '0.00';  // set later from live pricing
-
-            const state = { selectedVariantIds: [], usedPlacements: [] };
-            const pricingByVariantId = new Map();
-
-            const isPrintful = (origin) => {
-                try {
-                const h = new URL(origin).hostname;
-                return h === 'www.printful.com' || h.endsWith('.printful.com');
-                } catch { return false; }
-            }
-
-            function onMessage(e) {
-                // 1) Never handle EDM traffic
-                if (isPrintful(e.origin)) return;
-
-                // 2) Only handle our own channel
-                const d = e.data;
-                if (!d || d.channel !== 'pf-catalog-rpc' || typeof d.type !== 'string') return;
-
-                // …your existing logic that *does not* postMessage to the EDM iframe…
-            }
-            
-            function initializeEDM() {
-                if (productId) {
-                    initializeDesignMaker(productId, storeId);
-                }
-            }
-
-            function buildExternalId(pid) {
-                return `u${currentUserId || 0}:p${pid}:s:${uniqueId}`;
-            }
-
-            /* === EDM embed.js nonce helper === */
-            function requestEdmNonce(productId, extId) {
-                var ajaxUrl = (window.printful_ajax && printful_ajax.ajax_url) || (window.ajaxurl || '/wp-admin/admin-ajax.php');
-                var data = new URLSearchParams();
-                data.append('action', 'get_edm_token');
-                if (productId) data.append('product_id', productId);
-                if (extId)     data.append('external_product_id', extId);
-                if (window.printful_ajax && printful_ajax.nonce) data.append('nonce', printful_ajax.nonce);
-                return fetch(ajaxUrl, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                    body: data
-                }).then(function (r) { return r.json(); });
-            }
-
-            // Put near your EDM initializer
-            function nukeOverlays() {
-                // Printful’s internal loader and any theme modal leftovers
-                document.querySelectorAll('#printful-edm-container .overlay, #printful-edm-container .edm-loading')
-                    .forEach(el => el.remove());
-            }
-
-            function saveDesignToServer({ templateId, externalId, designName }) {
-                const ajaxUrl = (window.printful_ajax && printful_ajax.ajax_url) || (window.ajaxurl || '/wp-admin/admin-ajax.php');
-                const wpNonce = (window.printful_ajax && printful_ajax.nonce) || '';
-
-                const body = new URLSearchParams({
-                    action: 'printful_save_template',
-                    nonce: wpNonce,
-                    template_id: templateId,
-                    external_product_id: externalId,
-                    product_id: productId || '',
-                    store: storeId || '',
-                    design_name: designName,
-                    generate_mockup: '1',
-                    unit_price: currentUnitPrice,    // from live pricing
-                    currency: 'AUD',           // from live pricing
-                    variant_id: state.selectedVariantIds[0]
-                });
-
-                console.log(body);
-
-                return fetch(ajaxUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body
-                }).then(r => r.json());
-            }
-            
-            function guestSaveTemplate({ templateId, externalId, productId, designName }) {
-                const ajaxUrl = (window.printful_ajax && printful_ajax.ajax_url) || (window.ajaxurl || '/wp-admin/admin-ajax.php');
-                const wpNonce = (window.printful_ajax && printful_ajax.nonce) || '';
-                const body = new URLSearchParams({
-                    action: 'printful_guest_save_template',
-                    nonce: wpNonce,
-                    template_id: templateId,
-                    external_product_id: externalId,
-                    product_id: productId || '',
-                    store: storeId || '',
-                    design_name: designName || 'Untitled Design',
-                    unit_price: currentUnitPrice,    // from live pricing
-                    currency: 'AUD',           // from live pricing
-                    variant_id: state.selectedVariantIds[0]
-                });
-                return fetch(ajaxUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body
-                }).then(r => r.json());
-            }
-            
-            function initializeDesignMaker(productId, storeId) {
-                try {
-                    // externalProductId should be stable across re-opens; fall back to a timestamp if needed
-                    var extId = buildExternalId(productId);
-
-                    requestEdmNonce(productId, extId).then(function (resp) {
-                        const nonce = resp?.success ? resp.data?.nonce : resp?.nonce;
-
-                        if (!nonce) {
-                            console.error('EDM nonce not a string:', resp);
-                            showFallbackMessage('Unable to get EDM token.');
-                            return;
-                        }
-
-                        try {
-                            const variantIdByKey = new Map(); // key = `${color}::${size}` (lowercased)
-                            variants.forEach(v => variantIdByKey.set(`${v.color.toLowerCase()}::${v.size.toLowerCase()}`, v.id));
-
-                            window._pf = new PFDesignMaker({
-                                elemId: 'printful-edm-container',
-                                nonce: nonce,
-                                externalProductId: extId,
-                                initProduct: { productId: parseInt(productId || 0, 10) },
-                                show_unavailability_info: true,
-                                allowOnlyOneColorToBeSelected: true,
-                                allowOnlyOneSizeToBeSelected: true,
-                                onIframeLoaded() {
-                                    nukeOverlays();
-                                    const iframe = document.querySelector('#my-designer iframe');
-                                    if (!iframe) return;
-                                    iframe.setAttribute('scrolling', 'no');          // many browsers honor this
-                                    iframe.style.width = '100%';
-                                    iframe.style.height = window.innerHeight + 'px'; // prevent page overflow
-                                },
-
-                                onTemplateSaved: function (templateId) {
-                                    var designName = document.querySelector(`input[id^="design-name-"]`)?.value || 'Untitled Design';
-                                    saveDesignToServer({ templateId, externalId: extId, designName })
-                                        .then(({ success, data }) => {
-                                            if (!success && data?.error === 'auth_required') {
-                                                //alert(data.message || 'Please log in to save designs.');
-
-                                                guestSaveTemplate({
-                                                    templateId,
-                                                    externalId: extId,
-                                                    productId,
-                                                    designName
-                                                })
-                                                .then(({ success: gOk, data: g }) => {
-                                                    console.log('am inside guest save template');
-                                                    const target = (gOk && g?.redirect) ? g.redirect : (data && data.redirect);
-                                                    console.log(target);
-                                                    if (target) window.location.assign(target);
-                                                })
-                                                .catch(() => {
-                                                    console.log('am inside the redirect');
-                                                  //if (data && data.redirect) window.location.assign(data.redirect);
-                                                });
-                                        
-                                                //return;
-                                            }
-                                            if (!success) {
-                                              alert((data && (data.message || data.error)) || 'Could not save your design.');
-                                              return;
-                                            }
-                                            if (data?.redirect) location.assign(data.redirect);
-                                        })
-                                        .catch(err => {
-                                            console.error('Save AJAX error', err);
-                                            alert('Could not save your design. Please try again.');
-                                        });
-                                },
-
-                                onDesignStatusUpdate: ({ selectedVariantIds = [], usedPlacements = [] }) => {
-                                    state.selectedVariantIds = selectedVariantIds;
-                                    state.usedPlacements = usedPlacements;
-                                },
-
-                                onPricingStatusUpdate: (variantPriceList = []) => {
-                                    currentUnitPrice = variantPriceList[0].price.toFixed(2);
-                                    document.querySelector('#pf-live-price').textContent = money(variantPriceList[0].price.toFixed(2),'AUD');
-                                },
-
-                                onError: function (e) {
-                                    console.error('EDM error:', e);
-                                    alert('Design Maker error: ' + e);
-                                },
-
-                                livePricingConfig: {
-                                    useLivePricing: true, // Enables the feature
-                                    useAccountBasedPricing: false, // If true, gets discounts if EDM owner account has Printful Growth enabled
-                                    showPricesInPlacementsTabs: true, // If true, will show prices in placement tabs
-                                    livePricingCurrency: "AUD" // Currency to show and use
-                                },
-                                debug: true
-                            });
-
-                        } catch (e) {
-                            console.error(e);
-                            showFallbackMessage('Unable to initialize design maker.');
-                        }
-
-                    }).catch(function (err) {
-                        console.error(err);
-                        showFallbackMessage('Nonce request failed.');
-                    });
-
-                } catch (error) {
-                    console.error(error);
-                    showFallbackMessage('Unable to initialize design maker.');
-                }
-            }
-
-            function updatePriceUI() {
-                console.log('Updating price UI');
-                const selected = state.selectedVariantIds.length ? state.selectedVariantIds : [...pricingByVariantId.keys()];
-                let min = Infinity, max = 0, currency = 'AUD', first = null;
-
-                for (const vid of selected) {
-                    const info = pricingByVariantId.get(vid);
-                    if (!info) continue;
-                    currency = info.currency || currency;
-                    min = Math.min(min, info.effective);
-                    max = Math.max(max, info.effective);
-                    if (!first) first = info;
-                }
-                if (!isFinite(min)) return;
-
-                const label = (min === max) ? money(min, currency) : `${money(min, currency)} – ${money(max, currency)}`;
-                document.querySelector('#pf-live-price').textContent = 'From: '+label;
-
-                // Stash for Add-to-Cart: use the first selected variant's effective price (or min)
-                const unit = first?.effective ?? min;
-                const btn = document.querySelector('#pf-add-to-cart');
-                if (btn) {
-                    btn.dataset.unitPrice = unit.toFixed(2);
-                    btn.dataset.currency = currency;
-                }
-            }
-
-            function money(n, ccy) {
-                return new Intl.NumberFormat(undefined, { style: 'currency', currency: ccy }).format(n);
-            }
-            
-            function showFallbackMessage(message) {
-                document.getElementById(uniqueId + '-container').innerHTML = 
-                    '<div class="edm-fallback"><p>' + message + '</p></div>';
-            }
-            
-            function handleAddToCart(cartData) {
-                const designName = document.getElementById('design-name-' + uniqueId).value || 'My Design';
-                
-                const params = new URLSearchParams({
-                    action: 'add_design_to_cart',
-                    nonce: '<?php echo wp_create_nonce('printful_nonce'); ?>',
-                    product_id: String(cartData.productId || <?php echo (int)$atts['product_id']; ?>),
-                    external_product_id: String(cartData.externalProductId || ''),
-                    template_id: String(cartData.templateId || ''),
-                    design_name: designName,
-                    unit_price: currentUnitPrice || '',
-                    currency: 'AUD',
-                    variant_id: cartData.variantId || ''
-                });
-
-                fetch('<?php echo admin_url('admin-ajax.php'); ?>', {
-                    method: 'POST',
-                    headers: { 'Content-Type':'application/x-www-form-urlencoded' },
-                    body: params
-                })
-                .then(r => r.json())
-                .then(res => {
-                    if (!res || res.success !== true) {
-                        const d = res && res.data || {};
-                        if (d.error === 'auth_required') {
-                            alert(d.message || 'Please log in to add this to your cart.');
-                            if (d.redirect) window.location.assign(d.redirect);
-                            return;
-                        }
-                        console.error('Add to cart failed', res);
-                        alert('Could not add to cart.');
-                        return;
-                    }
-                    // success → redirect to cart if you want
-                    if (res.data && res.data.redirect) {
-                        window.location.assign(res.data.redirect);
-                    }
-                })
-                .catch(err => {
-                    console.error('Add to cart error', err);
-                    alert('Could not add to cart.');
-                });
-            }
-
-            // Initialize when DOM is ready
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initializeEDM);
-                document.getElementById('edm-save-btn').addEventListener('click', function (e) {
-                    e.preventDefault();
-                    console.log('Save design clicked');
-                    if (window._pf?.sendMessage) window._pf.sendMessage({ event: 'saveDesign' });
-                });
-
-                document.getElementById('edm-add-to-cart-btn').addEventListener('click', e => {
-                        e.preventDefault();
-                        handleAddToCart({ productId });
-                    });
-            } else {
-                initializeEDM();
-            }
-        })();
-        </script>
         <?php
         return ob_get_clean();
     }
@@ -1649,30 +1187,8 @@ class PrintfulCatalogPlugin {
         $mockup_url          = (string)($row['mockup_url'] ?? '');         // might be empty if mockup still rendering
         $design_category     = (string)($row['design_category'] ?? ($row['category'] ?? '')); // support either column name
 
-        // ---- Compute price (trust but verify) ----
-        // 1) If caller supplied a fresh price (e.g., user picked a variant on a saved view), use it; otherwise compute.
-        $unit_raw = isset($_POST['unit_price']) ? (float) $_POST['unit_price'] : 0.0;
+        $unit_raw = (float)$row['unit_price'];
         $currency = sanitize_text_field($_POST['currency'] ?? get_woocommerce_currency());
-
-        if ($unit_raw <= 0) {
-            // If we have a variant_id, use Printful variant pricing (includes placements when sent from EDM).
-            if ($pf_variant_id > 0) {
-                $variantPrice = $this->fetch_variant_effective_price($pf_variant_id, $currency);
-                if (is_numeric($variantPrice) && $variantPrice > 0) {
-                    $unit_raw = (float) $variantPrice;
-                }
-            }
-
-            // Fallback: minimally use product "From" price
-            if ($unit_raw <= 0 && $pf_product_id > 0) {
-                $minPrice = $this->get_catalog_min_price($pf_product_id, $currency);
-                if (is_numeric($minPrice) && $minPrice > 0) {
-                    $unit_raw = (float) $minPrice;
-                }
-            }
-        }
-
-        if ($unit_raw <= 0) { wp_send_json_error('price_unavailable'); return; }
 
         // Apply markup settings if you sell retail (optional)
         $markup_pct = (float) get_option('pf_markup_pct', 0);
@@ -1682,12 +1198,6 @@ class PrintfulCatalogPlugin {
         // ---- Add to cart as container product ----
         $container_product_id = (int) get_option('pf_container_product_id', 0);
         if ( ! $container_product_id ) { wp_send_json_error('container_not_configured'); return; }
-
-        // Ensure mockup_url is present; if not, leave blank (your cart hooks can lazy-swap later)
-        if (empty($mockup_url)) {
-            // Optional: look up a newer thumbnail from Printful if you store template_id/external_product_id
-            // $mockup_url = $this->maybe_fetch_latest_mockup($template_id, $pf_product_id);
-        }
 
         $cart_meta = [
             'pf_item'             => 1,
@@ -1704,6 +1214,8 @@ class PrintfulCatalogPlugin {
             'unique_key'          => md5($user_id . $row['id'] . microtime(true)), // avoid line merges
         ];
 
+		error_log(wp_json_encode($cart_meta));
+
         $key = WC()->cart->add_to_cart($container_product_id, 1, 0, [], $cart_meta);
         if ( ! $key ) { 
             wp_send_json_error('add_to_cart_failed'); 
@@ -1712,20 +1224,6 @@ class PrintfulCatalogPlugin {
         
         pf_set_flash_notice( 'Design added to your cart.', 'success' );
         wp_send_json_success(['redirect' => wc_get_cart_url()]);
-    }
-
-    private function fetch_variant_effective_price(int $variant_id, string $currency = null) {
-        $endpoint = "v2/catalog-variants/{$variant_id}/prices";
-        if ($currency) $endpoint .= '?currency=' . urlencode($currency);
-        $res = $this->make_api_request($endpoint, 'GET');
-        if (!is_array($res) || empty($res['data'])) return null;
-
-        $d = $res['data'];
-        // Prefer discountedPrice; else price; else originalPrice
-        if (isset($d['discounted_price']) && $d['discounted_price'] > 0) return (float)$d['discounted_price'];
-        if (isset($d['price']) && $d['price'] > 0) return (float)$d['price'];
-        if (isset($d['original_price']) && $d['original_price'] > 0) return (float)$d['original_price'];
-        return null;
     }
 
     public function get_design_data() {
@@ -1766,40 +1264,6 @@ class PrintfulCatalogPlugin {
     public function add_design_product_endpoint() {
         add_rewrite_rule('^design/?', 'index.php?design=1', 'top');
         add_rewrite_tag('%design%', '([^&]+)');
-    }
-
-    private function save_or_update_design_row($user_id, $product_id, $design_name, $status, $external_product_id, $template_id, $mockup_url = '', $unit_price = null, $currency = '', $variant_id = 0) {
-        global $wpdb;
-        $table = $wpdb->prefix . 'printful_designs';
-
-        $existing_id = $wpdb->get_var($wpdb->prepare(
-            "SELECT id FROM $table WHERE user_id=%d AND external_product_id=%s",
-            $user_id, $external_product_id
-        ));
-
-        $data = array(
-            'user_id'            => $user_id,
-            'product_id'         => $product_id,
-            'design_data'        => null, // legacy field not used for EDM
-            'design_name'        => $design_name ?: 'Untitled Design',
-            'status'             => $status,
-            'external_product_id'=> $external_product_id,
-            'template_id'        => $template_id ?: null,
-            'mockup_url'         => $mockup_url ?: null,
-            'unit_price'        => ($unit_price !== null ? $unit_price : null),
-            'currency'          => ($currency ?: null),
-            'variant_id'        => ($variant_id ?: null),
-            'last_saved'         => current_time('mysql'),
-        );
-        $formats = array('%d','%s','%s','%s','%s','%s','%d','%s','%f','%s','%d','%s');
-
-        if ($existing_id) {
-            $wpdb->update($table, $data, array('id' => (int)$existing_id), $formats, array('%d'));
-            return (int)$existing_id;
-        } else {
-            $wpdb->insert($table, $data, $formats);
-            return (int)$wpdb->insert_id;
-        }
     }
     
     public function add_my_designs_endpoint() {
@@ -1890,6 +1354,13 @@ class PrintfulCatalogPlugin {
                                 <button type="button" class="add-to-cart-design pf-btn pf-btn--primary" data-design-id="<?php echo esc_attr($design->id); ?>" style="margin-top:8px">Add to Cart</button>
                             <?php endif; ?>
 
+                            <button type="button"
+                                    class="edit-design pf-btn"
+                                    data-design-id="<?php echo (int)$design->id; ?>"
+                                    style="margin-top:8px">
+                            Edit in Designer
+                            </button>
+
                             <button type="button" class="delete-design pf-btn pf-btn--danger" data-design-id="<?php echo (int)$design->id; ?>">Delete</button>
                         </div>
                     <?php endforeach; ?>
@@ -1956,6 +1427,7 @@ class PrintfulCatalogPlugin {
         $unit_price             = isset($_POST['unit_price']) ? (float) $_POST['unit_price'] : null;
         $currency               = sanitize_text_field($_POST['currency'] ?? '');
         $variant_id             = isset($_POST['variant_id']) ? (int) $_POST['variant_id'] : 0;
+        $replace_id             = isset($_POST['replace_id']) ? (int) $_POST['replace_id'] : 0;
 
         if (!$template_id || !$external_product_id) {
             wp_send_json_error('Missing template_id or external_product_id');
@@ -1991,6 +1463,22 @@ class PrintfulCatalogPlugin {
             'last_saved'            => current_time('mysql'),
         ];
         $formats = array('%d','%s','%s','%s','%s','%s','%d','%s','%f','%s','%d','%s');
+
+        if ($replace_id) {
+            $owner = (int) $wpdb->get_var($wpdb->prepare("SELECT user_id FROM $table WHERE id = %d", $replace_id));
+            if ($owner && $owner === (int)$user_id) {
+                $wpdb->update($table, $data, array('id' => $replace_id), $formats, array('%d'));
+                $redirect = function_exists('wc_get_account_endpoint_url')
+                    ? wc_get_account_endpoint_url('my-designs')
+                    : (function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/'));
+                wp_send_json_success(array(
+                    'id'          => $replace_id,
+                    'template_id' => $template_id,
+                    'redirect'    => $redirect,
+                ));
+            }
+            // If replace_id is not owned by the user, fall through to standard upsert logic
+        }
 
         $redirect = function_exists('wc_get_account_endpoint_url')
             ? wc_get_account_endpoint_url('my-designs')
@@ -2118,7 +1606,212 @@ class PrintfulCatalogPlugin {
         ]);
     }
 
+	private function save_or_update_design_row($user_id, $product_id, $design_name, $status, $external_product_id, $template_id, $mockup_url = '', $unit_price = null, $currency = '', $variant_id = 0){
+		global $wpdb;
+		$table = $wpdb->prefix . 'printful_designs';
 
+		$existing_id = $wpdb->get_var($wpdb->prepare(
+			"SELECT id FROM $table WHERE user_id=%d AND external_product_id=%s",
+			$user_id,
+			$external_product_id
+		));
+
+		$data = array(
+			'user_id'            => $user_id,
+			'product_id'         => $product_id,
+			'design_data'        => null, // legacy field not used for EDM
+			'design_name'        => $design_name ?: 'Untitled Design',
+			'status'             => $status,
+			'external_product_id' => $external_product_id,
+			'template_id'        => $template_id ?: null,
+			'mockup_url'         => $mockup_url ?: null,
+			'unit_price'        => ($unit_price !== null ? $unit_price : null),
+			'currency'          => ($currency ?: null),
+			'variant_id'        => ($variant_id ?: null),
+			'last_saved'         => current_time('mysql'),
+		);
+		$formats = array('%d', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%f', '%s', '%d', '%s');
+
+		if ($existing_id) {
+			$wpdb->update($table, $data, array('id' => (int)$existing_id), $formats, array('%d'));
+			return (int)$existing_id;
+		} else {
+			$wpdb->insert($table, $data, $formats);
+			return (int)$wpdb->insert_id;
+		}
+	}
+
+	private function fetch_design_by_id($design_id, $require_owner = true){
+		global $wpdb;
+		$table     = $wpdb->prefix . 'printful_designs';
+		$design_id = absint($design_id);
+		if (! $design_id) {
+			return null;
+		}
+
+		if ($require_owner && is_user_logged_in()) {
+			$uid = get_current_user_id();
+			$sql = $wpdb->prepare("SELECT * FROM {$table} WHERE id = %d AND user_id = %d LIMIT 1", $design_id, $uid);
+		} else {
+			$sql = $wpdb->prepare("SELECT * FROM {$table} WHERE id = %d LIMIT 1", $design_id);
+		}
+		$row = $wpdb->get_row($sql, ARRAY_A);
+		return $row ?: null;
+	}
+
+	/* NEW: small helpers to safely add columns/indexes when missing */
+	private function maybe_add_column($table, $column, $sql){
+		global $wpdb;
+		$exists = $wpdb->get_var($wpdb->prepare("SHOW COLUMNS FROM `$table` LIKE %s", $column));
+		if (!$exists) {
+			$wpdb->query($sql);
+		}
+	}
+
+	private function maybe_add_index($table, $index, $sql){
+		global $wpdb;
+		$exists = $wpdb->get_var($wpdb->prepare("SHOW INDEX FROM `$table` WHERE Key_name = %s", $index));
+		if (!$exists) {
+			$wpdb->query($sql);
+		}
+	}
+
+	private function clear_product_cache(){
+		global $wpdb;
+		$wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_printful_products_%' OR option_name LIKE '_transient_timeout_printful_products_%'");
+	}
+
+	private function pf_get_all_catalog_categories($force_refresh = false){
+		$cache_key = 'pf_catalog_categories_all_v2';
+		if (!$force_refresh) {
+			$cached = get_transient($cache_key);
+			if ($cached !== false) return $cached;
+		}
+
+		$categories = [];
+		$limit = 100;
+		$offset = 0;
+
+		do {
+			$endpoint = "v2/catalog-categories?limit={$limit}&offset={$offset}";
+			$resp = $this->make_api_request($endpoint, 'GET');
+
+			if (!is_array($resp) || empty($resp['data']) || !is_array($resp['data'])) break;
+
+			foreach ($resp['data'] as $row) {
+				$categories[] = [
+					'id'        => (int) ($row['id'] ?? 0),
+					'parent_id' => (int) ($row['parent_id'] ?? 0),
+					'title'     => (string) ($row['title'] ?? ''),
+					'image_url' => (string) ($row['image_url'] ?? ''),
+				];
+			}
+
+			$count = count($resp['data']);
+			$offset += $limit;
+		} while ($count === $limit);
+
+		set_transient($cache_key, $categories, DAY_IN_SECONDS);
+		return $categories;
+	}
+
+	private function pf_build_category_paths(array $cats){
+		$byId = [];
+		foreach ($cats as $c) $byId[$c['id']] = $c;
+
+		$cache = [];
+		$pathOf = function ($id) use (&$byId, &$cache, &$pathOf) {
+			if (isset($cache[$id])) return $cache[$id];
+			if (!isset($byId[$id])) return '';
+			$chain = [];
+			$cur = $byId[$id];
+			$guard = 0;
+			while ($cur && $guard++ < 20) {
+				array_unshift($chain, (string)($cur['title'] ?? ''));
+				$pid = (int)($cur['parent_id'] ?? 0);
+				$cur = $pid && isset($byId[$pid]) ? $byId[$pid] : null;
+			}
+			return $cache[$id] = trim(implode(' › ', array_filter($chain)));
+		};
+
+		$rows = [];
+		foreach ($cats as $c) $rows[] = ['id' => $c['id'], 'label' => $pathOf($c['id'])];
+		usort($rows, fn($a, $b) => strcasecmp($a['label'], $b['label']));
+		return $rows;
+	}
+
+	private function get_edm_nonce_token($product_id, $variant_id = null, $external_product_id = ''){
+		$payload = array(
+			'external_product_id' => $external_product_id ? (string) $external_product_id : (string) $product_id,
+			'external_customer_id' => (string)get_current_user_id() ?: null,
+		);
+		// if ( ! empty($_SERVER['REMOTE_ADDR']) )     { $payload['ip_address'] = sanitize_text_field($_SERVER['REMOTE_ADDR']); }
+		// if ( ! empty($_SERVER['HTTP_USER_AGENT']) ) { $payload['user_agent'] = sanitize_text_field($_SERVER['HTTP_USER_AGENT']); }
+
+		// Must call the API base (your make_api_request should prefix with https://api.printful.com/)
+		$response = $this->make_api_request('embedded-designer/nonces', 'POST', $payload);
+
+		if (is_array($response) && isset($response['result']['nonce']['nonce']) && is_string($response['result']['nonce']['nonce'])) {
+			return $response['result']['nonce']['nonce'];
+		}
+		return false;
+	}
+
+	private function get_catalog_min_price($product_id, $currency = null, $region = null){
+		$key_bits = [$product_id, $currency ?: 'store', $region ?: 'store'];
+		$cache_key = 'pf_min_price_' . implode('_', $key_bits);
+		$cached = get_transient($cache_key);
+		if ($cached !== false) return $cached;
+
+		// Build v2 prices endpoint; omit params to use your store currency/region
+		$endpoint = "v2/catalog-products/{$product_id}/prices";
+		$qs = [];
+		if ($currency) $qs[] = 'currency=AUD';
+		if ($region)   $qs[] = 'selling_region_name=australia';
+		if ($qs) $endpoint .= '?' . implode('&', $qs);
+
+		$res = $this->make_api_request($endpoint, 'GET');
+		if (!$res || empty($res['data'])) return null;
+
+		$data = $res['data'];
+
+		// Map first-placement prices by technique (if present)
+		$placement_price_by_tech = [];
+		if (!empty($data['product']['placements']) && is_array($data['product']['placements'])) {
+			foreach ($data['product']['placements'] as $pl) {
+				$techKey = $pl['technique_key'] ?? $pl['techniqueKey'] ?? null;
+				if (!$techKey) continue;
+				$placement_price_by_tech[$techKey] = (float) (
+					$pl['discounted_price'] ?? $pl['price'] ?? 0
+				);
+			}
+		}
+
+		// Walk all variant technique prices; pick minimum total
+		$min = INF;
+		if (!empty($data['variants']) && is_array($data['variants'])) {
+			foreach ($data['variants'] as $v) {
+				foreach ($v['techniques'] as $t) {
+					$prices[]    = (float)$t['price'];
+				}
+			}
+
+			$min = $prices ? min($prices) : null;
+		}
+
+		if (!is_finite($min)) return null;
+
+		set_transient($cache_key, $min, 12 * HOUR_IN_SECONDS);
+		return $min;
+	}
+
+	private function get_cached_products($cache_key){
+		return get_transient('printful_products_' . md5($cache_key));
+	}
+
+	private function set_cached_products($cache_key, $products, $expiration = 3600){
+		set_transient('printful_products_' . md5($cache_key), $products, $expiration);
+	}
 }
 
 new PrintfulCatalogPlugin();
