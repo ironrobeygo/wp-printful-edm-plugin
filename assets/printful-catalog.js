@@ -452,5 +452,4 @@
     $grid.empty();
     $more.trigger('click');
   });
-
 })(jQuery);
