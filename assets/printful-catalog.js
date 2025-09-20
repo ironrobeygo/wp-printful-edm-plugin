@@ -171,47 +171,85 @@
           limit: limit,
           category_ids: categoryIds || [],
         },
-        timeout: 10000,
+        timeout: 30000,
+		beforeSend: function () {
+		    $button.prop("disabled", true).addClass("is-loading");
+		    $spinner.show();
+		},
       })
         .done(function (resp) {
-          $spinner.hide();
+            $spinner.hide();
 
-          if (resp && resp.success) {
-            var html = (resp.data && resp.data.html) || "";
-            if (replace) $grid.html(html);
-            else $grid.append(html);
+            var data = (resp && resp.data) || {};
+            var ok = !!(resp && resp.success);
+            var html = data.html || "";
+            var hasMore =
+              typeof data.has_more === "boolean" ? data.has_more : true;
+            var nextOffset =
+              data.next_offset != null ? data.next_offset : data.offset;
+            if (typeof nextOffset !== "number") nextOffset = offset + limit;
 
-            var next = resp.data && (resp.data.next_offset || resp.data.offset);
-            var nextOffset = Number.isInteger(next) ? next : offset + limit;
-            $button
-              .data("offset", nextOffset)
-              .attr("data-offset", nextOffset)
-              .prop("disabled", false)
-              .show();
+            if (ok) {
+              if (replace) {
+                $grid.html(html);
+              } else {
+                if (html && html.trim()) $grid.append(html);
+              }
 
-            console.debug(
-              "PF: grid updated (replace=" + !!replace + ") with",
-              (html.match(/product-card/g) || []).length,
-              "cards"
-            );
-          } else {
-            if (replace) $grid.html("");
-            $button.hide();
-            $ctx
-              .find(
-                ".load-more-container .no-more-products, .load-more-container .error-message"
-              )
-              .remove();
-            $ctx
-              .find(".load-more-container")
-              .append(
-                '<p class="no-more-products">No more products to load.</p>'
+              if ((!html || !html.trim()) && hasMore) {
+                $button
+                  .data("offset", nextOffset)
+                  .attr("data-offset", nextOffset);
+                // try again immediately to skip barren slice
+                PrintfulCatalog.loadMoreProducts($.Event("manual"));
+                return;
+              }
+
+              if (hasMore === false) {
+                if (replace && (!html || !html.trim())) $grid.html("");
+                $button.hide();
+                $ctx
+                  .find(
+                    ".load-more-container .no-more-products, .load-more-container .error-message"
+                  )
+                  .remove();
+                $ctx
+                  .find(".load-more-container")
+                  .append(
+                    '<p class="no-more-products">No more products to load.</p>'
+                  );
+                return;
+              }
+
+              $button
+                .data("offset", nextOffset)
+                .attr("data-offset", nextOffset)
+                .prop("disabled", false)
+                .show();
+
+              console.debug(
+                "PF: grid updated (replace=" + !!replace + ") with",
+                (html.match(/product-card/g) || []).length,
+                "cards"
               );
-          }
+            } else {
+              if (replace) $grid.html("");
+              $button.hide();
+              $ctx
+                .find(
+                  ".load-more-container .no-more-products, .load-more-container .error-message"
+                )
+                .remove();
+              $ctx
+                .find(".load-more-container")
+                .append(
+                  '<p class="no-more-products">No more products to load.</p>'
+                );
+            }
         })
         .fail(function (_xhr, status) {
-          $spinner.hide();
-          $button.prop("disabled", false).show();
+			$spinner.hide();
+      		$button.prop("disabled", false).removeClass("is-loading").show();
           var msg =
             status === "timeout"
               ? "Request timed out. Please try again."
@@ -219,7 +257,11 @@
           $ctx
             .find(".load-more-container")
             .append('<p class="error-message">' + msg + "</p>");
-        });
+        })
+		.always(function () {
+			$spinner.hide();
+			$button.prop("disabled", false).removeClass("is-loading").show();
+		});
     },
 
     applyCatalogFilter: function (e) {
@@ -250,8 +292,7 @@
       $loadMore.data("offset", 0).attr("data-offset", 0);
       $grid.empty();
 
-      // Kick off the load (offset=0 forces "replace" in success handler)
-      $loadMore.trigger("click");
+      PrintfulCatalog.loadMoreProducts($.Event("manual"));
     },
 
     loadMoreProducts: function (e) {
@@ -270,7 +311,7 @@
       var offset = parseInt($button.data("offset"), 10) || 0;
       var limit = parseInt($button.data("limit"), 10) || 8;
 
-	  PrintfulCatalog.setGridColumns($grid, limit);
+      PrintfulCatalog.setGridColumns($grid, limit);
 
       var filters = $button.data("pfFilters") || $ctx.data("pfFilters") || {};
 
@@ -315,25 +356,58 @@
           "color[]": filters.color || [],
           "sizes[]": filters.sizes || [],
         },
-        timeout: 10000,
+        timeout: 30000,
+        beforeSend: function () {
+          $button.prop("disabled", true).addClass("is-loading");
+          $spinner.show();
+        },
         success: function (response) {
           $spinner.hide();
 
-          if (response && response.success) {
-            var html =
-              response.data && response.data.html ? response.data.html : "";
+          var data = (response && response.data) || {};
+          var ok = !!(response && response.success);
+          var html = data.html || "";
+          var hasMore =
+            typeof data.has_more === "boolean" ? data.has_more : true;
+          var nextOffset =
+            data.next_offset != null ? data.next_offset : data.offset;
+          if (typeof nextOffset !== "number") nextOffset = offset + limit;
 
+          if (ok) {
             if (offset === 0) {
-              // <-- first page for a filter => replace
               $grid.html(html);
             } else {
-              $grid.append(html);
+              if (html && html.trim()) $grid.append(html);
             }
 
-            var nextOffset =
-              (response.data &&
-                (response.data.next_offset || response.data.offset)) ||
-              offset + limit;
+            // If this slice produced no visible items but server says there’s more,
+            // advance the raw offset and immediately try again (quietly).
+            if ((!html || !html.trim()) && hasMore) {
+              $button
+                .data("offset", nextOffset)
+                .attr("data-offset", nextOffset);
+              PrintfulCatalog.loadMoreProducts($.Event("manual"));
+              return;
+            }
+
+            // True exhaustion ONLY when server says so.
+            if (hasMore === false) {
+              if (offset === 0 && (!html || !html.trim())) $grid.html("");
+              $button.hide();
+              $ctx
+                .find(
+                  ".load-more-container .no-more-products, .load-more-container .error-message"
+                )
+                .remove();
+              $ctx
+                .find(".load-more-container")
+                .append(
+                  '<p class="no-more-products">No more products to load.</p>'
+                );
+              return;
+            }
+
+            // Otherwise advance and keep button enabled
             $button
               .data("offset", nextOffset)
               .attr("data-offset", nextOffset)
@@ -365,7 +439,7 @@
         },
         error: function (_xhr, status) {
           $spinner.hide();
-          $button.prop("disabled", false).show();
+          $button.prop("disabled", false).removeClass("is-loading").show();
           var msg =
             status === "timeout"
               ? "Request timed out. Please try again."
@@ -373,6 +447,11 @@
           $ctx
             .find(".load-more-container")
             .append('<p class="error-message">' + msg + "</p>");
+        },
+        complete: function () {
+          // ensure cleanup even if success handler throws
+          $spinner.hide();
+          $button.prop("disabled", false).removeClass("is-loading").show();
         },
       });
     },
@@ -599,7 +678,6 @@
       var $grid = $ctx.find(PrintfulCatalog.GRID_SEL);
       var $loadMore = $ctx.find(PrintfulCatalog.LOAD_MORE_SEL);
 
-      // Persist selection to both elements (your load_more_products reads from here)
       $ctx.attr("data-category-ids", csv);
       $loadMore.attr("data-category-ids", csv);
 
@@ -614,7 +692,6 @@
       PrintfulCatalog.loadMoreProducts($.Event("manual"));
     },
 
-    // Generic handler for any facet panel change
     onFacetGenericChange: function () {
       var $ctx = $(PrintfulCatalog.CATALOG_SEL);
       var $grid = $ctx.find(PrintfulCatalog.GRID_SEL);
@@ -622,7 +699,7 @@
 
       PrintfulCatalog.resetExhausted($ctx);
 
-      // Gather all facets from DOM
+      // Gather filters…
       var filters = {
         technique: gatherChecked('input[name="technique[]"]'),
         placements: gatherChecked('input[name="placements[]"]'),
@@ -630,21 +707,17 @@
         sizes: gatherChecked('input[name="sizes[]"]'),
       };
 
-      // Persist for later reads
       $ctx.data("pfFilters", filters);
       $loadMore.data("pfFilters", filters);
 
-      PrintfulCatalog.updateDropdownLabels(); // NEW
-      $loadMore.trigger("click");
+      PrintfulCatalog.updateDropdownLabels();
 
-      // Reset + reload
       $loadMore.data("offset", 0).attr("data-offset", 0);
       $grid.empty();
       PrintfulCatalog.loadMoreProducts($.Event("manual"));
 
-      // --- helper: local to this handler’s scope ---
       function gatherChecked(sel, coerceNumeric) {
-        var vals = $ctx
+        return $ctx
           .find(sel + ":checked")
           .map(function () {
             var v = String($(this).val() || "").trim();
@@ -652,7 +725,6 @@
             return v;
           })
           .get();
-        return vals;
       }
     },
 
@@ -735,6 +807,7 @@
 
     var $ctx = $(PrintfulCatalog.CATALOG_SEL);
     var $loadMore = $ctx.find(PrintfulCatalog.LOAD_MORE_SEL);
+	$ctx.data("inStockOnly", ($ctx.attr("data-in-stock-only") || "0") === "1");
 
     // Capture the shortcode's default "Show all" categories once
     var initialCsv =
@@ -758,6 +831,8 @@
     if (!$loadMore.attr("data-category-ids"))
       $loadMore.attr("data-category-ids", initialCsv);
 
+	$ctx.data("pfBooted", false);
+
     // Populate placements for the default categories
     if (typeof PrintfulCatalog.refreshPlacementsFromCsv === "function") {
       PrintfulCatalog.refreshPlacementsFromCsv(initialCsv);
@@ -766,6 +841,8 @@
     ) {
       PrintfulCatalog.refreshBrandingOptionsFromCsv(initialCsv);
     }
+
+	$ctx.data("pfBooted", true);
 
     // Capture default labels and set initial counts
     PrintfulCatalog.captureDefaultDropdownLabels();
@@ -972,7 +1049,7 @@
 
 	PrintfulCatalog.updateDropdownLabels();
 
-    $loadMore.trigger("click");
+    PrintfulCatalog.loadMoreProducts($.Event("manual"));
   };
 
   PrintfulCatalog.renderPlacementsDropdown = function (allowedMap) {
@@ -1015,9 +1092,10 @@
 
     if ($clear && $clear.length) $panel.append($clear);
 
-    // In case previously-selected placements are no longer available,
-    // trigger a refresh so the query stays consistent
-    PrintfulCatalog.onFacetGenericChange.call($panel.get(0));
+	var $ctx = $(PrintfulCatalog.CATALOG_SEL);
+	if ($ctx.data("pfBooted")) {
+		PrintfulCatalog.onFacetGenericChange.call($panel.get(0));
+	}
   };
 
   PrintfulCatalog.refreshBrandingOptionsFromCsv = function (csv) {

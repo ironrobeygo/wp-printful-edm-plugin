@@ -1,10 +1,4 @@
 <?php
-// ========== FILE: class-printful-auto-confirm.php ==========
-// Drop this file next to your main plugin file (printful-catalog.php)
-// Then, in printful-catalog.php, add:
-//   require_once __DIR__ . '/class-printful-auto-confirm.php';
-//   add_action('plugins_loaded', ['Printful_AutoConfirm', 'init']);
-
 if (!defined('ABSPATH')) { exit; }
 
 class Printful_AutoConfirm {
