@@ -647,20 +647,6 @@
 }
 .pf-filter-btn.is-active { border-color:#111; box-shadow:0 0 0 2px #111 inset; }
 
-.woocommerce-MyAccount-navigation-link--my-designs a::before{
-  content: "\f53f";              /* FA6 'palette' */
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;              /* solid weight */
-  display: inline-block;
-  margin-right: .55em;
-  width: 1.1em;
-  text-align: center;
-}
-
-/* === One-line responsive header for your Custom Design bar === */
-/* Apply this to the outer wrapper of that strip. If you don't have a wrapper,
-   add class="pf-designer-header" to the container that holds the title,
-   input, price, and the two buttons. */
 .pf-designer-header{
   display:flex;
   align-items:center;
@@ -671,7 +657,6 @@
   scrollbar-width: thin;
 }
 
-/* Title */
 .pf-designer-header .pf-title{
   flex:0 0 auto;
   white-space:nowrap;
@@ -679,7 +664,6 @@
   overflow:hidden;
 }
 
-/* Name input */
 .pf-designer-header .pf-name{
   flex:1 1 320px;            /* this is the stretchiest part */
   min-width:160px;
