@@ -136,7 +136,7 @@ class DisplayDesignMakerShortcode {
 					</div>
 					<div class="design-actions">
 						<button type="button" id="edm-save-btn" class="pf-btn pf-btn--primary">Save Design</button>
-						<button type="button" onclick="location.href = '<?php echo esc_url($back_url); ?>';" class="pf-btn pf-btn--secondary">Back to Catalog Page</button>
+						<button type="button" onclick="location.href = '<?php echo esc_url($back_url); ?>';" class="pf-btn pf-btn--secondary">Back to Catalog</button>
 					</div>
 				</div>
 
